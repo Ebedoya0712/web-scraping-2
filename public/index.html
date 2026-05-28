@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huntly Clone - Google Maps Lead Scraper</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span class="brand-name">Huntly</span>
+      </div>
+
+      <div class="user-profile">
+        <div class="avatar">E</div>
+        <div class="user-info">
+          <span class="username">Usuario Local</span>
+          <span class="plan-badge">Plan Pro</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-search-nav" id="new-search-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        Nueva búsqueda
+      </button>
+
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active" data-view="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+            <rect x="3" y="3" width="7" height="9"></rect>
+            <rect x="14" y="3" width="7" height="5"></rect>
+            <rect x="14" y="12" width="7" height="9"></rect>
+            <rect x="3" y="16" width="7" height="5"></rect>
+          </svg>
+          Dashboard
+        </a>
+        <a href="#" class="nav-item" data-view="portfolio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Mi Cartera
+        </a>
+        <a href="#" class="nav-item" data-view="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Configuración
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="history-title">Historial de Búsquedas</div>
+        <div class="history-list" id="search-history-list">
+          <!-- Populated by JS -->
+          <div class="history-empty">Sin búsquedas previas</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN MAIN CONTENT -->
+    <main class="main-content">
+      
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard" class="view-section">
+        <header class="view-header">
+          <div class="header-left">
+            <span class="current-date" id="dashboard-date">Mayo de 2026</span>
+            <h1 class="header-title" id="welcome-text">Prospecta clientes inteligentes</h1>
+            <p class="header-subtitle">Tu radar local de prospección automatizado con Google Maps.</p>
+          </div>
+          <button class="btn btn-secondary btn-new-search">
+            <span>Nueva búsqueda</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </header>
+
+        <!-- STATS GRID -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-total-leads">0</div>
+              <div class="stat-label">Total Leads Guardados</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 9.92v7z"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-contactable">0</div>
+              <div class="stat-label">Leads Contactables</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-yellow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-emails">0</div>
+              <div class="stat-label">Con Correo Disponible</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-niches">0</div>
+              <div class="stat-label">Categorías/Nichos</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY ROW -->
+        <div class="dashboard-row">
+          <div class="panel main-panel">
+            <div class="panel-header">
+              <h2>Actividad de Prospección</h2>
+              <span class="panel-tag">Últimos 14 días</span>
+            </div>
+            <div class="activity-chart-container">
+              <div class="chart-y-axis">
+                <span>100</span>
+                <span>50</span>
+                <span>0</span>
+              </div>
+              <div class="chart-bars" id="activity-bars">
+                <!-- Generated by JS -->
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 10%"></div>
+                  <span class="bar-day">Lun</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 35%"></div>
+                  <span class="bar-day">Mar</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 15%"></div>
+                  <span class="bar-day">Mié</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 5%"></div>
+                  <span class="bar-day">Jue</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 50%"></div>
+                  <span class="bar-day">Vie</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 0%"></div>
+                  <span class="bar-day">Sáb</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="bar-fill" style="height: 0%"></div>
+                  <span class="bar-day">Dom</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel side-panel">
+            <div class="panel-header">
+              <h2>Nichos Buscados</h2>
+            </div>
+            <ul class="niche-list" id="popular-niches-list">
+              <!-- Populated by JS -->
+              <li class="niche-item-empty">No has realizado búsquedas aún.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEARCH CLIENTS VIEW -->
+      <section id="view-search" class="view-section hidden">
+        <header class="view-header">
+          <div class="header-left">
+            <span class="current-date">Herramienta de Extracción</span>
+            <h1 class="header-title">Descubrir clientes con Google Maps</h1>
+            <p class="header-subtitle">Encuentra clientes locales por categoría y zona, y extrae su información de contacto.</p>
+          </div>
+        </header>
+
+        <div class="search-box-panel">
+          <div class="search-form-row">
+            <div class="form-group flex-2">
+              <label for="search-niche">1. Nicho o Categoría de Negocio</label>
+              <div class="input-wrapper">
+                <input type="text" id="search-niche" placeholder="Ej: Abogados, Restaurantes, Clínicas Dentales, Gimnasios..." list="niche-suggestions">
+                <datalist id="niche-suggestions">
+                  <option value="Abogados y Asesorías">
+                  <option value="Academias de Baile">
+                  <option value="Academias de Idiomas">
+                  <option value="Agencias de Marketing Digital">
+                  <option value="Agencias Inmobiliarias">
+                  <option value="Arquitectos e Interioristas">
+                  <option value="Barberías">
+                  <option value="Carpintería y Ebanistería">
+                  <option value="Centros de Estética">
+                  <option value="Centros Veterinarios">
+                  <option value="Clínicas Dentales">
+                  <option value="Contabilidad y Fiscalidad">
+                  <option value="Electricistas">
+                  <option value="Escuelas de Conducir">
+                  <option value="Fisioterapeutas">
+                  <option value="Fontaneros">
+                  <option value="Fotógrafos">
+                  <option value="Gestorías">
+                  <option value="Gimnasios y CrossFit">
+                  <option value="Guarderías y Educación Infantil">
+                  <option value="Instaladores de Alarmas">
+                  <option value="Instaladores Placas Solares">
+                  <option value="Joyerías">
+                  <option value="Lavanderías y Tintorerías">
+                  <option value="Mudanzas y Transporte">
+                  <option value="Nutricionistas y Dietistas">
+                  <option value="Ópticas">
+                  <option value="Peluquerías">
+                  <option value="Personal Trainer">
+                  <option value="Psicólogos y Terapeutas">
+                  <option value="Reformas y Construcción">
+                  <option value="Restaurantes y Cafeterías">
+                  <option value="Seguros">
+                  <option value="Talleres Mecánicos">
+                  <option value="Yoga y Pilates">
+                </datalist>
+                <button type="button" class="btn-input-action" id="btn-random-niche">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+                    <polyline points="16 3 21 3 21 8"></polyline>
+                    <line x1="4" y1="20" x2="21" y2="3"></line>
+                    <polyline points="21 16 21 21 16 21"></polyline>
+                    <line x1="15" y1="15" x2="21" y2="21"></line>
+                    <line x1="4" y1="4" x2="9" y2="9"></line>
+                  </svg>
+                  Aleatorio
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group flex-2" style="position: relative;">
+              <label for="search-location">2. Barrio, Ciudad o País</label>
+              <div class="input-wrapper">
+                <input type="text" id="search-location" placeholder="Ej: Veracruz, México o Gràcia, Barcelona" autocomplete="off">
+                <button type="button" class="btn-input-action" id="btn-random-location">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+                    <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  Mapa
+                </button>
+              </div>
+              <div class="autocomplete-suggestions" id="location-suggestions" style="display: none;"></div>
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="search-limit">3. Límite de Comercios</label>
+              <select id="search-limit" class="form-select">
+                <option value="5">5 comercios (Rápido)</option>
+                <option value="10" selected>10 comercios (Recomendado)</option>
+                <option value="20">20 comercios</option>
+                <option value="50">50 comercios</option>
+                <option value="100">100 comercios (Lento)</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-submit-search" id="start-scraping-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Descubrir clientes
+          </button>
+        </div>
+
+        <!-- PROGRESS & REAL TIME CONSOLE -->
+        <div class="scraping-progress-panel hidden" id="scraping-progress-panel">
+          <div class="panel-header border-bottom">
+            <div class="progress-details">
+              <h3>Buscando Clientes en Google Maps...</h3>
+              <p id="search-status-text">Iniciando navegadores en segundo plano...</p>
+            </div>
+            <div class="progress-stats">
+              <div class="p-stat">
+                <span class="p-val" id="progress-found-count">0</span>
+                <span class="p-lbl">Encontrados</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROGRESS BAR -->
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
+          </div>
+
+          <!-- RESULTS CARDS GRID -->
+          <div class="results-cards-grid" id="search-results-cards">
+            <!-- Dynamically populated with beautiful lead cards -->
+          </div>
+
+          <!-- DEBUG CONSOLE LOG -->
+          <div class="console-log-container" style="margin-top: 24px;">
+            <div class="console-header">Consola de depuración (Log en tiempo real)</div>
+            <div class="console-body" id="console-logs" style="height: 120px;">
+              <div class="log-line system">[Sistema] Listo para iniciar scraping.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PORTFOLIO VIEW (LEADS CARTERA) -->
+      <section id="view-portfolio" class="view-section hidden">
+        <header class="view-header">
+          <div class="header-left">
+            <span class="current-date">Clientes Potenciales</span>
+            <h1 class="header-title">Mi Cartera de Leads</h1>
+            <p class="header-subtitle">Administra, filtra y exporta todos los clientes encontrados.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-danger" id="clear-portfolio-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Vaciar cartera
+            </button>
+            <button class="btn btn-success" id="export-csv-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Exportar CSV (.csv)
+            </button>
+          </div>
+        </header>
+
+        <!-- FILTERS PANEL -->
+        <div class="filters-panel">
+          <div class="filter-row">
+            <div class="filter-group flex-2">
+              <input type="text" id="portfolio-search" class="filter-input" placeholder="Buscar por nombre, dirección, nicho, teléfono o email...">
+            </div>
+            <div class="filter-group flex-1">
+              <select id="portfolio-filter-category" class="filter-select">
+                <option value="">Todas las categorías</option>
+              </select>
+            </div>
+            <div class="filter-group flex-1">
+              <select id="portfolio-filter-contact" class="filter-select">
+                <option value="">Cualquier tipo de lead</option>
+                <option value="contactable">Contactable (Email o Teléfono)</option>
+                <option value="email">Tiene Email</option>
+                <option value="website">Tiene Web</option>
+                <option value="noweb">Sin Web</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADS TABLE PANEL -->
+        <div class="panel table-panel">
+          <div class="table-container">
+            <table class="leads-table" id="leads-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Ubicación</th>
+                  <th>Teléfono</th>
+                  <th>Email</th>
+                  <th>Sitio Web</th>
+                  <th>Reputación</th>
+                  <th>Sociales</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-body">
+                <!-- Dynamically populated -->
+                <tr>
+                  <td colspan="9" class="table-empty">No hay clientes guardados en tu cartera. ¡Realiza una búsqueda para comenzar!</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <div class="table-info" id="table-info-text">Mostrando 0 de 0 leads</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONFIGURATION VIEW -->
+      <section id="view-settings" class="view-section hidden">
+        <header class="view-header">
+          <div class="header-left">
+            <span class="current-date">Preferencias</span>
+            <h1 class="header-title">Configuración</h1>
+            <p class="header-subtitle">Ajusta el comportamiento del scraper y del sistema.</p>
+          </div>
+        </header>
+
+        <div class="panel settings-panel">
+          <h3>Ajustes de Raspado</h3>
+          <div class="settings-form">
+            <div class="form-group checkbox-group">
+              <input type="checkbox" id="setting-stealth" checked disabled>
+              <label for="setting-stealth">
+                <strong>Modo Incógnito / Anti-Bloqueo Activo</strong>
+                <span>Usa Puppeteer Stealth para camuflar el bot y evitar bloqueos en Google Maps.</span>
+              </label>
+            </div>
+            <div class="form-group checkbox-group">
+              <input type="checkbox" id="setting-deep-scrape" checked>
+              <label for="setting-deep-scrape">
+                <strong>Crawl de Sitio Web Profundo (Contacto/Nosotros)</strong>
+                <span>Si está activo, el robot navegará a las páginas de "Contacto" o "Acerca de" de las empresas para encontrar el correo si no está en la página de inicio.</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label for="setting-delay">Tiempo de espera de red (milisegundos)</label>
+              <input type="number" id="setting-delay" class="filter-input" value="8000" min="2000" max="30000">
+              <span class="setting-desc">Tiempo de espera máximo al acceder a sitios web de comercios para extraer información de contacto.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
