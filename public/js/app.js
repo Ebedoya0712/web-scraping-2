@@ -378,13 +378,10 @@ function updateLiveLead(business, searchLocation) {
 
   // Generate dynamic outreach script
   let outreachScript = "";
-  const locationShort = searchLocation ? searchLocation.split(',')[0] : 'su zona';
   if (!business.website) {
-    outreachScript = `Hola,\n\nVi su negocio "${name}" en Google Maps en ${locationShort} con una excelente puntuación de ${business.rating || 0} estrellas (${business.reviewsCount || 0} reseñas).\n\nMe di cuenta de que no tienen una página web. Ayudo a negocios locales a crear sitios web profesionales que traen más clientes de forma automática.\n\n¿Le interesaría ver una propuesta sencilla y gratuita para su negocio?\n\nSaludos!`;
-  } else if (business.rating && business.rating < 3.5) {
-    outreachScript = `Hola,\n\nVi su negocio "${name}" en Google Maps y noté que tiene una calificación de ${business.rating} estrellas.\n\nAyudamos a los negocios locales en ${locationShort} a mejorar su reputación y conseguir más comentarios positivos de los clientes.\n\n¿Le interesaría conocer nuestro método automatizado para subir su calificación rápidamente?\n\nSaludos!`;
+    outreachScript = `Hola, buenas. He visto que su negocio "${name}" no cuenta con página web. Me presento, soy Eliecer Bedoya, programador web y encargado de la empresa Capitask.\n\nLe he preparado una propuesta de página web para su negocio por si desea ver cómo quedaría. Podemos coordinar una breve reunión. Aquí tiene nuestro enlace para ver el ejemplo y saber más de nosotros: https://capitask-software.netlify.app/\n\n¿Le gustaría que lo revisemos juntos? ¡Quedo atento!`;
   } else {
-    outreachScript = `Hola,\n\nVi su negocio "${name}" en Google Maps y estuve revisando su sitio web (${business.website.replace(/^https?:\/\/(www\.)?/i, '')}).\n\nNoté algunas oportunidades de mejora en la velocidad y el diseño móvil que podrían estar haciéndole perder clientes potenciales frente a la competencia.\n\n¿Estaría abierto a que le envíe una auditoría rápida y gratuita de 2 minutos?\n\nSaludos!`;
+    outreachScript = `Hola, buenas. Vi su negocio "${name}" en Google Maps y estuve revisando su sitio web. Me presento, soy Eliecer Bedoya de la empresa de desarrollo Capitask.\n\nNoté algunas oportunidades de mejora para acelerar su web y hacer que capte más clientes. Puede ver nuestro portafolio y servicios aquí: https://capitask-software.netlify.app/\n\n¿Estaría abierto a que le envíe una propuesta rápida y sin compromiso para potenciar su página? ¡Saludos!`;
   }
 
   // Update Badges & Ratings
@@ -856,13 +853,10 @@ function renderLeadsTable(resetPage = true) {
 
     // Actions
     let outreachScript = "";
-    const locationShort = lead.location ? lead.location.split(',')[0] : 'su zona';
     if (!lead.website) {
-      outreachScript = `Hola,\n\nVi su negocio "${lead.name}" en Google Maps en ${locationShort} con una excelente puntuación de ${lead.rating || 0} estrellas (${lead.reviewsCount || 0} reseñas).\n\nMe di cuenta de que no tienen una página web. Ayudo a negocios locales a crear sitios web profesionales que traen más clientes de forma automática.\n\n¿Le interesaría ver una propuesta sencilla y gratuita para su negocio?\n\nSaludos!`;
-    } else if (lead.rating && lead.rating < 3.5) {
-      outreachScript = `Hola,\n\nVi su negocio "${lead.name}" en Google Maps y noté que tiene una calificación de ${lead.rating} estrellas.\n\nAyudamos a los negocios locales en ${locationShort} a mejorar su reputación y conseguir más comentarios positivos de los clientes.\n\n¿Le interesaría conocer nuestro método automatizado para subir su calificación rápidamente?\n\nSaludos!`;
+      outreachScript = `Hola, buenas. He visto que su negocio "${lead.name}" no cuenta con página web. Me presento, soy Eliecer Bedoya, programador web y encargado de la empresa Capitask.\n\nLe he preparado una propuesta de página web para su negocio por si desea ver cómo quedaría. Podemos coordinar una breve reunión. Aquí tiene nuestro enlace para ver el ejemplo y saber más de nosotros: https://capitask-software.netlify.app/\n\n¿Le gustaría que lo revisemos juntos? ¡Quedo atento!`;
     } else {
-      outreachScript = `Hola,\n\nVi su negocio "${lead.name}" en Google Maps y estuve revisando su sitio web (${lead.website.replace(/^https?:\/\/(www\.)?/i, '')}).\n\nNoté algunas oportunidades de mejora en la velocidad y el diseño móvil que podrían estar haciéndole perder clientes potenciales frente a la competencia.\n\n¿Estaría abierto a que le envíe una auditoría rápida y gratuita de 2 minutos?\n\nSaludos!`;
+      outreachScript = `Hola, buenas. Vi su negocio "${lead.name}" en Google Maps y estuve revisando su sitio web. Me presento, soy Eliecer Bedoya de la empresa de desarrollo Capitask.\n\nNoté algunas oportunidades de mejora para acelerar su web y hacer que capte más clientes. Puede ver nuestro portafolio y servicios aquí: https://capitask-software.netlify.app/\n\n¿Estaría abierto a que le envíe una propuesta rápida y sin compromiso para potenciar su página? ¡Saludos!`;
     }
 
     const waCleaned = cleanPhoneForWhatsApp(lead.phone);
