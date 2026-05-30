@@ -178,10 +178,13 @@ export async function scrapeGoogleMaps(niche, location, limit = 10, onProgress =
       const places = await page.evaluate(() => {
         const links = Array.from(document.querySelectorAll('a[href*="/maps/place/"]'));
         return links.map(link => {
-          // Find the parent business card container to extract basic details
-          const parent = link.closest('.Nv2y1d') || link.closest('.m6QErb') || link.parentElement;
+          let title = link.getAttribute('aria-label') || '';
+          if (!title) {
+            const parent = link.closest('.Nv2y1d') || link.parentElement;
+            title = parent?.querySelector('.qBF1Pd')?.textContent || '';
+          }
           return {
-            title: parent?.querySelector('.qBF1Pd')?.textContent || '',
+            title: title.trim(),
             url: link.href
           };
         }).filter(p => p.title && p.url);
