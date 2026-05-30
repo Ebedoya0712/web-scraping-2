@@ -292,6 +292,10 @@ function appendLiveLead(name, contactStatus, statusClass) {
   const empty = grid.querySelector('.live-lead-empty');
   if (empty) empty.remove();
 
+  // Remove skeleton cards if they exist
+  const skeletons = grid.querySelectorAll('.skeleton-card');
+  skeletons.forEach(s => s.remove());
+
   // Create card
   const card = document.createElement('div');
   card.className = 'lead-card';
@@ -566,7 +570,38 @@ function setupSearchActions() {
     document.getElementById('progress-bar-fill').style.width = '0%';
     document.getElementById('progress-found-count').innerText = '0';
     document.getElementById('search-status-text').innerText = 'Iniciando navegador headless...';
-    document.getElementById('search-results-cards').innerHTML = '<div class="live-lead-empty">Esperando datos de Google Maps...</div>';
+    document.getElementById('search-results-cards').innerHTML = `
+      <div class="skeleton-card">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line text"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-badges-row">
+          <div class="skeleton-line badge"></div>
+          <div class="skeleton-line badge"></div>
+        </div>
+        <div class="skeleton-box"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line text"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-badges-row">
+          <div class="skeleton-line badge"></div>
+          <div class="skeleton-line badge"></div>
+        </div>
+        <div class="skeleton-box"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line text"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-badges-row">
+          <div class="skeleton-line badge"></div>
+          <div class="skeleton-line badge"></div>
+        </div>
+        <div class="skeleton-box"></div>
+      </div>
+    `;
     document.getElementById('console-logs').innerHTML = '<div class="log-line system">[Sistema] Sesión de scraping iniciada.</div>';
     
     progressPanel.classList.remove('hidden');
