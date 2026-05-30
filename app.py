@@ -121,6 +121,9 @@ def search_stream():
             db = read_db()
             new_leads_count = 0
             
+            def normalize_name(name):
+                return "".join(c for c in name.lower() if c.isalnum()) if name else ""
+
             for item in results:
                 # Generate unique ID
                 maps_url = item.get('mapsUrl', '')
@@ -133,8 +136,13 @@ def search_stream():
                 item['location'] = location
                 item['scrapedAt'] = datetime.utcnow().isoformat() + 'Z'
                 
-                # Check duplication
-                exists = any(l.get('mapsUrl') == item.get('mapsUrl') for l in db['leads'])
+                # Check duplication by URL or normalized name
+                norm_name = normalize_name(item['name'])
+                exists = any(
+                    l.get('mapsUrl') == item.get('mapsUrl') or 
+                    normalize_name(l.get('name', '')) == norm_name
+                    for l in db['leads']
+                )
                 if not exists:
                     db['leads'].append(item)
                     new_leads_count += 1

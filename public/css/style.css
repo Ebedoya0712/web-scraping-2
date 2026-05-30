@@ -332,6 +332,17 @@ body {
   color: white;
 }
 
+.btn-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-info);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.btn-info:hover {
+  background-color: var(--color-info);
+  color: white;
+}
+
 .btn-search-nav {
   width: 100%;
   margin-bottom: 24px;
@@ -1315,6 +1326,118 @@ body {
   max-height: 120px;
   overflow-y: auto;
   text-align: left;
+}
+
+/* Card Outreach Action Buttons */
+.card-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-action-wa {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background-color: rgba(37, 211, 102, 0.1);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.btn-action-wa:hover {
+  background-color: #25d366;
+  color: white;
+}
+
+.btn-action-mail {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.btn-action-mail:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-action-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Table action buttons */
+.action-btn-wa {
+  background: transparent;
+  border: none;
+  color: #25d366;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn-wa:hover {
+  background-color: rgba(37, 211, 102, 0.1);
+}
+
+.action-btn-wa svg {
+  width: 16px;
+  height: 16px;
+}
+
+.action-btn-mail {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn-mail:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.action-btn-mail svg {
+  width: 16px;
+  height: 16px;
+}
+
+.actions-cell-wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 

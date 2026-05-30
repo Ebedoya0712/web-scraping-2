@@ -324,6 +324,15 @@ function appendLiveLead(name, contactStatus, statusClass) {
   grid.insertBefore(card, grid.firstChild);
 }
 
+function cleanPhoneForWhatsApp(phone) {
+  if (!phone) return "";
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) {
+    cleaned = cleaned.substring(1);
+  }
+  return cleaned;
+}
+
 function updateLiveLead(business, searchLocation) {
   const name = business.name;
   const cardId = `live-card-${name.replace(/\s+/g, '-')}`;
@@ -367,6 +376,8 @@ function updateLiveLead(business, searchLocation) {
   const locationShort = searchLocation ? searchLocation.split(',')[0] : 'su zona';
   if (!business.website) {
     outreachScript = `Hola,\n\nVi su negocio "${name}" en Google Maps en ${locationShort} con una excelente puntuación de ${business.rating || 0} estrellas (${business.reviewsCount || 0} reseñas).\n\nMe di cuenta de que no tienen una página web. Ayudo a negocios locales a crear sitios web profesionales que traen más clientes de forma automática.\n\n¿Le interesaría ver una propuesta sencilla y gratuita para su negocio?\n\nSaludos!`;
+  } else if (business.rating && business.rating < 3.5) {
+    outreachScript = `Hola,\n\nVi su negocio "${name}" en Google Maps y noté que tiene una calificación de ${business.rating} estrellas.\n\nAyudamos a los negocios locales en ${locationShort} a mejorar su reputación y conseguir más comentarios positivos de los clientes.\n\n¿Le interesaría conocer nuestro método automatizado para subir su calificación rápidamente?\n\nSaludos!`;
   } else {
     outreachScript = `Hola,\n\nVi su negocio "${name}" en Google Maps y estuve revisando su sitio web (${business.website.replace(/^https?:\/\/(www\.)?/i, '')}).\n\nNoté algunas oportunidades de mejora en la velocidad y el diseño móvil que podrían estar haciéndole perder clientes potenciales frente a la competencia.\n\n¿Estaría abierto a que le envíe una auditoría rápida y gratuita de 2 minutos?\n\nSaludos!`;
   }
@@ -433,6 +444,25 @@ function updateLiveLead(business, searchLocation) {
   outreachDiv.appendChild(toggleBtn);
   outreachDiv.appendChild(scriptContent);
 
+  // Outreach quick action links (WhatsApp and Mail)
+  const waCleaned = cleanPhoneForWhatsApp(business.phone);
+  const waUrl = waCleaned ? `https://wa.me/${waCleaned}?text=${encodeURIComponent(outreachScript)}` : '#';
+  const mailUrl = (business.emails && business.emails.length > 0) ? `mailto:${business.emails[0]}?subject=${encodeURIComponent('Contacto - ' + business.name)}&body=${encodeURIComponent(outreachScript)}` : '#';
+
+  const actionRow = document.createElement('div');
+  actionRow.className = 'card-actions-row';
+  actionRow.innerHTML = `
+    <a href="${waUrl}" target="${waCleaned ? '_blank' : '_self'}" class="btn-action-wa ${waCleaned ? '' : 'btn-action-disabled'}" title="${waCleaned ? 'Enviar propuesta por WhatsApp' : 'Sin número de teléfono'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      WhatsApp
+    </a>
+    <a href="${mailUrl}" target="${business.emails?.length > 0 ? '_blank' : '_self'}" class="btn-action-mail ${business.emails?.length > 0 ? '' : 'btn-action-disabled'}" title="${business.emails?.length > 0 ? 'Enviar propuesta por Correo' : 'Sin correo electrónico'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      Email
+    </a>
+  `;
+
+  card.appendChild(actionRow);
   card.appendChild(oppBox);
   card.appendChild(outreachDiv);
 }
@@ -616,6 +646,7 @@ function setupPortfolioActions() {
   const contactFilter = document.getElementById('portfolio-filter-contact');
   const clearBtn = document.getElementById('clear-portfolio-btn');
   const exportBtn = document.getElementById('export-csv-btn');
+  const exportPdfBtn = document.getElementById('export-pdf-btn');
 
   searchInput.addEventListener('input', renderLeadsTable);
   catFilter.addEventListener('change', renderLeadsTable);
@@ -639,6 +670,12 @@ function setupPortfolioActions() {
   exportBtn.addEventListener('click', () => {
     exportFilteredLeadsCSV();
   });
+
+  if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', () => {
+      exportFilteredLeadsPDF();
+    });
+  }
 }
 
 // Populate Category Filter dropdown dynamically
@@ -763,10 +800,32 @@ function renderLeadsTable() {
     socialsCell += '</div>';
 
     // Actions
+    let outreachScript = "";
+    const locationShort = lead.location ? lead.location.split(',')[0] : 'su zona';
+    if (!lead.website) {
+      outreachScript = `Hola,\n\nVi su negocio "${lead.name}" en Google Maps en ${locationShort} con una excelente puntuación de ${lead.rating || 0} estrellas (${lead.reviewsCount || 0} reseñas).\n\nMe di cuenta de que no tienen una página web. Ayudo a negocios locales a crear sitios web profesionales que traen más clientes de forma automática.\n\n¿Le interesaría ver una propuesta sencilla y gratuita para su negocio?\n\nSaludos!`;
+    } else if (lead.rating && lead.rating < 3.5) {
+      outreachScript = `Hola,\n\nVi su negocio "${lead.name}" en Google Maps y noté que tiene una calificación de ${lead.rating} estrellas.\n\nAyudamos a los negocios locales en ${locationShort} a mejorar su reputación y conseguir más comentarios positivos de los clientes.\n\n¿Le interesaría conocer nuestro método automatizado para subir su calificación rápidamente?\n\nSaludos!`;
+    } else {
+      outreachScript = `Hola,\n\nVi su negocio "${lead.name}" en Google Maps y estuve revisando su sitio web (${lead.website.replace(/^https?:\/\/(www\.)?/i, '')}).\n\nNoté algunas oportunidades de mejora en la velocidad y el diseño móvil que podrían estar haciéndole perder clientes potenciales frente a la competencia.\n\n¿Estaría abierto a que le envíe una auditoría rápida y gratuita de 2 minutos?\n\nSaludos!`;
+    }
+
+    const waCleaned = cleanPhoneForWhatsApp(lead.phone);
+    const waUrl = waCleaned ? `https://wa.me/${waCleaned}?text=${encodeURIComponent(outreachScript)}` : '#';
+    const mailUrl = (lead.emails && lead.emails.length > 0) ? `mailto:${lead.emails[0]}?subject=${encodeURIComponent('Contacto - ' + lead.name)}&body=${encodeURIComponent(outreachScript)}` : '#';
+
     const actionCell = `
-      <button class="action-btn-danger" onclick="deleteLead('${lead.id}')" title="Eliminar lead">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-      </button>
+      <div class="actions-cell-wrapper">
+        <a href="${waUrl}" target="${waCleaned ? '_blank' : '_self'}" class="action-btn-wa ${waCleaned ? '' : 'btn-action-disabled'}" title="${waCleaned ? 'Enviar propuesta por WhatsApp' : 'Sin teléfono'}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </a>
+        <a href="${mailUrl}" target="${lead.emails?.length > 0 ? '_blank' : '_self'}" class="action-btn-mail ${lead.emails?.length > 0 ? '' : 'btn-action-disabled'}" title="${lead.emails?.length > 0 ? 'Enviar propuesta por Correo' : 'Sin correo'}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </a>
+        <button class="action-btn-danger" onclick="deleteLead('${lead.id}')" title="Eliminar lead">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        </button>
+      </div>
     `;
 
     tr.innerHTML = `
@@ -889,4 +948,98 @@ function escapeCSVValue(val) {
     formatted = `"${formatted}"`;
   }
   return formatted;
+}
+
+function exportFilteredLeadsPDF() {
+  const query = document.getElementById('portfolio-search').value.toLowerCase();
+  const category = document.getElementById('portfolio-filter-category').value;
+  const contactType = document.getElementById('portfolio-filter-contact').value;
+
+  const filtered = state.leads.filter(lead => {
+    const matchesSearch = 
+      lead.name.toLowerCase().includes(query) ||
+      (lead.address && lead.address.toLowerCase().includes(query)) ||
+      (lead.category && lead.category.toLowerCase().includes(query)) ||
+      (lead.phone && lead.phone.includes(query)) ||
+      (lead.emails && lead.emails.some(e => e.toLowerCase().includes(query))) ||
+      (lead.website && lead.website.toLowerCase().includes(query));
+
+    const matchesCategory = !category || lead.category === category;
+
+    let matchesContact = true;
+    if (contactType === 'contactable') {
+      matchesContact = lead.phone || (lead.emails && lead.emails.length > 0);
+    } else if (contactType === 'email') {
+      matchesContact = lead.emails && lead.emails.length > 0;
+    } else if (contactType === 'website') {
+      matchesContact = !!lead.website;
+    } else if (contactType === 'noweb') {
+      matchesContact = !lead.website;
+    }
+
+    return matchesSearch && matchesCategory && matchesContact;
+  });
+
+  if (filtered.length === 0) {
+    alert('No hay leads para exportar con los filtros aplicados.');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l', 'mm', 'a4'); // Landscape format to fit all columns nicely
+
+  // Add brand header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(99, 102, 241); // Primary indigo
+  doc.text('Huntly', 14, 15);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(14);
+  doc.setTextColor(30, 30, 30);
+  doc.text('Reporte de Clientes Potenciales (Leads)', 40, 15);
+
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  const dateStr = new Date().toLocaleString('es-ES');
+  doc.text(`Generado: ${dateStr} | Total leads: ${filtered.length}`, 14, 23);
+
+  // Prepare table data
+  const headers = [['Nombre', 'Categoría', 'Teléfono', 'Email', 'Sitio Web', 'Reputación']];
+  const data = filtered.map(lead => [
+    lead.name,
+    lead.category || '-',
+    lead.phone || '-',
+    lead.emails?.join(', ') || '-',
+    lead.website || 'Sin web',
+    lead.rating ? `${lead.rating} (${lead.reviewsCount} reseñas)` : 'Sin reseñas'
+  ]);
+
+  // Generate table using autotable
+  doc.autoTable({
+    startY: 28,
+    head: headers,
+    body: data,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [99, 102, 241],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+      overflow: 'linebreak'
+    },
+    columnStyles: {
+      0: { cellWidth: 50 }, // Name
+      1: { cellWidth: 40 }, // Category
+      2: { cellWidth: 35 }, // Phone
+      3: { cellWidth: 50 }, // Email
+      4: { cellWidth: 55 }, // Website
+      5: { cellWidth: 35 }  // Reputation
+    }
+  });
+
+  doc.save(`leads_huntly_${Date.now()}.pdf`);
 }
