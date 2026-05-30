@@ -60,6 +60,12 @@
           </svg>
           Mi Cartera
         </a>
+        <a href="#" class="nav-item" data-view="outreach">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Outreach
+        </a>
         <a href="#" class="nav-item" data-view="settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
             <circle cx="12" cy="12" r="3"></circle>
@@ -459,6 +465,164 @@
           </div>
         </div>
       </section>
+
+      <!-- OUTREACH VIEW -->
+      <section id="view-outreach" class="view-section hidden">
+        <header class="view-header">
+          <div class="header-left">
+            <span class="current-date">Automatización de Contacto</span>
+            <h1 class="header-title">Centro de Outreach</h1>
+            <p class="header-subtitle">Envía mensajes personalizados a tus leads con un clic. Cada mensaje es único.</p>
+          </div>
+        </header>
+
+        <!-- OUTREACH STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="outreach-total">0</div>
+              <div class="stat-label">Total con Contacto</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-yellow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="outreach-pending">0</div>
+              <div class="stat-label">Pendientes</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="outreach-contacted">0</div>
+              <div class="stat-label">Contactados</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="outreach-no-web">0</div>
+              <div class="stat-label">Sin Web (Oportunidad)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OUTREACH TABS -->
+        <div class="outreach-tabs-container">
+          <div class="outreach-tabs">
+            <button class="outreach-tab active" data-tab="pending">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Pendientes
+              <span class="tab-count" id="tab-count-pending">0</span>
+            </button>
+            <button class="outreach-tab" data-tab="noweb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+              Sin Web
+              <span class="tab-count" id="tab-count-noweb">0</span>
+            </button>
+            <button class="outreach-tab" data-tab="hasweb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline><line x1="12" y1="16" x2="12" y2="8"></line></svg>
+              Con Web
+              <span class="tab-count" id="tab-count-hasweb">0</span>
+            </button>
+            <button class="outreach-tab" data-tab="contacted">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Contactados
+              <span class="tab-count" id="tab-count-contacted">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- OUTREACH LEADS QUEUE -->
+        <div class="outreach-queue" id="outreach-queue">
+          <div class="outreach-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;opacity:0.3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <p>No hay leads en esta categoría.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OUTREACH MODAL -->
+      <div class="outreach-modal-overlay hidden" id="outreach-modal">
+        <div class="outreach-modal">
+          <div class="outreach-modal-header">
+            <h2 id="modal-lead-name">Nombre del negocio</h2>
+            <button class="outreach-modal-close" id="outreach-modal-close">&times;</button>
+          </div>
+
+          <div class="outreach-modal-body">
+            <!-- Lead Info -->
+            <div class="modal-lead-info">
+              <div class="modal-info-row">
+                <span class="modal-info-icon">📍</span>
+                <span id="modal-lead-address">Dirección</span>
+              </div>
+              <div class="modal-info-row">
+                <span class="modal-info-icon">📞</span>
+                <span id="modal-lead-phone">Teléfono</span>
+              </div>
+              <div class="modal-info-row">
+                <span class="modal-info-icon">✉️</span>
+                <span id="modal-lead-email">Email</span>
+              </div>
+              <div class="modal-info-row">
+                <span class="modal-info-icon">🏷️</span>
+                <span id="modal-lead-category">Categoría</span>
+              </div>
+              <div class="modal-info-row" id="modal-lead-web-row">
+                <span class="modal-info-icon">🌐</span>
+                <span id="modal-lead-web">Sitio web</span>
+              </div>
+            </div>
+
+            <!-- Demo URL input (only for no-web leads) -->
+            <div class="modal-demo-url-section" id="modal-demo-url-section" style="display:none;">
+              <label for="modal-demo-url" class="modal-demo-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                URL del sitio demo que le preparaste a este negocio:
+              </label>
+              <input type="url" id="modal-demo-url" class="filter-input" placeholder="https://ejemplo-optica.netlify.app/">
+            </div>
+
+            <!-- Message Preview -->
+            <div class="modal-message-section">
+              <div class="modal-message-header">
+                <span class="modal-message-title">📝 Mensaje personalizado</span>
+                <button class="btn-regenerate" id="btn-regenerate-msg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                  Regenerar
+                </button>
+              </div>
+              <div class="modal-message-preview" id="modal-message-preview">
+                Generando mensaje...
+              </div>
+            </div>
+          </div>
+
+          <div class="outreach-modal-footer">
+            <button class="btn btn-action-wa-lg" id="modal-send-wa">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              Enviar por WhatsApp
+            </button>
+            <button class="btn btn-action-mail-lg" id="modal-send-email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              Enviar por Email
+            </button>
+            <button class="btn btn-secondary" id="modal-skip">
+              Omitir ›
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- CONFIGURATION VIEW -->
       <section id="view-settings" class="view-section hidden">

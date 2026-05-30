@@ -49,6 +49,7 @@ const views = {
   dashboard: document.getElementById('view-dashboard'),
   search: document.getElementById('view-search'),
   portfolio: document.getElementById('view-portfolio'),
+  outreach: document.getElementById('view-outreach'),
   settings: document.getElementById('view-settings')
 };
 
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSearchActions();
   setupPortfolioActions();
   setupPaginationControls();
+  setupOutreach();
   loadAllData();
 });
 
@@ -74,6 +76,7 @@ async function loadAllData() {
   renderDashboard();
   renderLeadsTable();
   renderHistory();
+  renderOutreachView();
 }
 
 function initDate() {
@@ -127,6 +130,11 @@ function switchView(viewName) {
   });
 
   state.activeView = viewName;
+
+  // Refresh outreach data when switching to that view
+  if (viewName === 'outreach') {
+    renderOutreachView();
+  }
 }
 
 // API Fetches
@@ -1172,4 +1180,276 @@ function exportFilteredLeadsPDF() {
   });
 
   doc.save(`leads_huntly_${Date.now()}.pdf`);
+}
+
+// ==========================================
+// OUTREACH SYSTEM
+// ==========================================
+
+function cleanPhoneForWhatsApp(phone) {
+  if (!phone) return null;
+  // Remove all non-digit characters except +
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  // Remove leading + and any spaces
+  cleaned = cleaned.replace(/^\+/, '');
+  // If it starts with 0, remove it (local number)
+  if (cleaned.startsWith('0')) cleaned = cleaned.substring(1);
+  // Return null if too short
+  if (cleaned.length < 7) return null;
+  return cleaned;
+}
+
+let outreachState = {
+  activeTab: 'pending',
+  currentModalLead: null,
+  currentMessage: ''
+};
+
+function setupOutreach() {
+  // Tab switching
+  document.querySelectorAll('.outreach-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.outreach-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      outreachState.activeTab = tab.getAttribute('data-tab');
+      renderOutreachQueue();
+    });
+  });
+
+  // Modal close
+  document.getElementById('outreach-modal-close').addEventListener('click', closeOutreachModal);
+  document.getElementById('outreach-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('outreach-modal')) closeOutreachModal();
+  });
+
+  // Regenerate message
+  document.getElementById('btn-regenerate-msg').addEventListener('click', () => {
+    if (outreachState.currentModalLead) {
+      const demoUrl = document.getElementById('modal-demo-url').value.trim() || null;
+      generateMessage(outreachState.currentModalLead, demoUrl);
+    }
+  });
+
+  // Send via WhatsApp
+  document.getElementById('modal-send-wa').addEventListener('click', () => {
+    const lead = outreachState.currentModalLead;
+    if (!lead) return;
+    const phone = cleanPhoneForWhatsApp(lead.phone);
+    if (!phone) { alert('Este lead no tiene número de teléfono.'); return; }
+    const msg = outreachState.currentMessage;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    markLeadContacted(lead.id);
+  });
+
+  // Send via Email
+  document.getElementById('modal-send-email').addEventListener('click', () => {
+    const lead = outreachState.currentModalLead;
+    if (!lead) return;
+    const email = lead.emails && lead.emails.length > 0 ? lead.emails[0] : null;
+    if (!email) { alert('Este lead no tiene correo electrónico.'); return; }
+    const msg = outreachState.currentMessage;
+    const subject = `Propuesta para ${lead.name} - Capitask`;
+    window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`, '_blank');
+    markLeadContacted(lead.id);
+  });
+
+  // Skip
+  document.getElementById('modal-skip').addEventListener('click', () => {
+    closeOutreachModal();
+  });
+
+  // Demo URL input change triggers regeneration
+  document.getElementById('modal-demo-url').addEventListener('change', () => {
+    if (outreachState.currentModalLead) {
+      const demoUrl = document.getElementById('modal-demo-url').value.trim() || null;
+      generateMessage(outreachState.currentModalLead, demoUrl);
+    }
+  });
+}
+
+function renderOutreachView() {
+  const contactable = state.leads.filter(l => l.phone || (l.emails && l.emails.length > 0));
+  const pending = contactable.filter(l => !l.contacted);
+  const contacted = contactable.filter(l => l.contacted);
+  const noWeb = contactable.filter(l => !l.website && !l.contacted);
+  const hasWeb = contactable.filter(l => l.website && !l.contacted);
+
+  // Update stats
+  document.getElementById('outreach-total').innerText = contactable.length;
+  document.getElementById('outreach-pending').innerText = pending.length;
+  document.getElementById('outreach-contacted').innerText = contacted.length;
+  document.getElementById('outreach-no-web').innerText = noWeb.length;
+
+  // Update tab counts
+  document.getElementById('tab-count-pending').innerText = pending.length;
+  document.getElementById('tab-count-noweb').innerText = noWeb.length;
+  document.getElementById('tab-count-hasweb').innerText = hasWeb.length;
+  document.getElementById('tab-count-contacted').innerText = contacted.length;
+
+  renderOutreachQueue();
+}
+
+function renderOutreachQueue() {
+  const queue = document.getElementById('outreach-queue');
+  const contactable = state.leads.filter(l => l.phone || (l.emails && l.emails.length > 0));
+
+  let filtered = [];
+  switch (outreachState.activeTab) {
+    case 'pending':
+      filtered = contactable.filter(l => !l.contacted);
+      break;
+    case 'noweb':
+      filtered = contactable.filter(l => !l.website && !l.contacted);
+      break;
+    case 'hasweb':
+      filtered = contactable.filter(l => l.website && !l.contacted);
+      break;
+    case 'contacted':
+      filtered = contactable.filter(l => l.contacted);
+      break;
+  }
+
+  if (filtered.length === 0) {
+    queue.innerHTML = `
+      <div class="outreach-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;opacity:0.3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <p>${outreachState.activeTab === 'contacted' ? '¡Aún no has contactado a ningún lead!' : 'No hay leads pendientes en esta categoría. ¡Buen trabajo!'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  queue.innerHTML = filtered.map(lead => {
+    const hasPhone = !!lead.phone;
+    const hasEmail = lead.emails && lead.emails.length > 0;
+    const hasWeb = !!lead.website;
+    const isContacted = !!lead.contacted;
+
+    return `
+      <div class="outreach-lead-card ${isContacted ? 'contacted' : ''}" data-lead-id="${lead.id}">
+        <div class="olc-name">${lead.name}</div>
+        <div class="olc-details">
+          <div class="olc-detail">
+            <span class="olc-detail-icon">📍</span>
+            <span>${lead.address || lead.location || 'Sin dirección'}</span>
+          </div>
+          ${hasPhone ? `<div class="olc-detail"><span class="olc-detail-icon">📞</span><span>${lead.phone}</span></div>` : ''}
+          ${hasEmail ? `<div class="olc-detail"><span class="olc-detail-icon">✉️</span><span>${lead.emails[0]}</span></div>` : ''}
+        </div>
+        <div class="olc-badges">
+          ${!hasWeb ? '<span class="olc-badge noweb">Sin Web ★</span>' : '<span class="olc-badge hasweb">Con Web</span>'}
+          ${hasPhone ? '<span class="olc-badge hasphone">Teléfono</span>' : ''}
+          ${hasEmail ? '<span class="olc-badge hasemail">Email</span>' : ''}
+          ${lead.rating ? `<span class="olc-badge" style="background:rgba(245,158,11,0.1);color:var(--color-warning);border:1px solid rgba(245,158,11,0.2)">⭐ ${lead.rating}</span>` : ''}
+        </div>
+        <button class="olc-action-btn" onclick="openOutreachModal('${lead.id}')">
+          ${isContacted ? '📋 Ver / Reenviar' : '📨 Preparar mensaje'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.openOutreachModal = function(leadId) {
+  const lead = state.leads.find(l => l.id === leadId);
+  if (!lead) return;
+
+  outreachState.currentModalLead = lead;
+  const hasWeb = !!lead.website;
+
+  // Fill modal info
+  document.getElementById('modal-lead-name').innerText = lead.name;
+  document.getElementById('modal-lead-address').innerText = lead.address || lead.location || 'Sin dirección';
+  document.getElementById('modal-lead-phone').innerText = lead.phone || 'Sin teléfono';
+  document.getElementById('modal-lead-email').innerText = (lead.emails && lead.emails.length > 0) ? lead.emails.join(', ') : 'Sin email';
+  document.getElementById('modal-lead-category').innerText = lead.category || 'Sin categoría';
+
+  // Web row
+  const webRow = document.getElementById('modal-lead-web-row');
+  if (hasWeb) {
+    webRow.style.display = 'flex';
+    document.getElementById('modal-lead-web').innerHTML = `<a href="${lead.website}" target="_blank" style="color: var(--color-info)">${lead.website.replace(/^https?:\/\/(www\.)?/i, '').substring(0, 35)}</a>`;
+  } else {
+    webRow.style.display = 'none';
+  }
+
+  // Demo URL section
+  const demoSection = document.getElementById('modal-demo-url-section');
+  if (!hasWeb) {
+    demoSection.style.display = 'block';
+    document.getElementById('modal-demo-url').value = '';
+  } else {
+    demoSection.style.display = 'none';
+  }
+
+  // Disable buttons if no contact
+  const waBtn = document.getElementById('modal-send-wa');
+  const emailBtn = document.getElementById('modal-send-email');
+  
+  if (!lead.phone) {
+    waBtn.style.opacity = '0.4';
+    waBtn.style.pointerEvents = 'none';
+    waBtn.title = 'Sin número de teléfono';
+  } else {
+    waBtn.style.opacity = '1';
+    waBtn.style.pointerEvents = 'auto';
+    waBtn.title = '';
+  }
+
+  if (!lead.emails || lead.emails.length === 0) {
+    emailBtn.style.opacity = '0.4';
+    emailBtn.style.pointerEvents = 'none';
+    emailBtn.title = 'Sin correo electrónico';
+  } else {
+    emailBtn.style.opacity = '1';
+    emailBtn.style.pointerEvents = 'auto';
+    emailBtn.title = '';
+  }
+
+  // Generate message
+  generateMessage(lead, null);
+
+  // Show modal
+  document.getElementById('outreach-modal').classList.remove('hidden');
+};
+
+async function generateMessage(lead, demoUrl) {
+  const preview = document.getElementById('modal-message-preview');
+  preview.innerText = '⏳ Generando mensaje personalizado...';
+
+  try {
+    const res = await fetch('/api/generate-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lead, demoUrl })
+    });
+    const data = await res.json();
+    outreachState.currentMessage = data.message;
+    preview.innerText = data.message;
+  } catch (e) {
+    preview.innerText = 'Error generando mensaje. Intente de nuevo.';
+    console.error('Error generating message:', e);
+  }
+}
+
+async function markLeadContacted(leadId) {
+  try {
+    await fetch(`/api/leads/${encodeURIComponent(leadId)}/contacted`, { method: 'PATCH' });
+    // Update local state
+    const lead = state.leads.find(l => l.id === leadId);
+    if (lead) {
+      lead.contacted = true;
+      lead.contactedAt = new Date().toISOString();
+    }
+    renderOutreachView();
+    closeOutreachModal();
+  } catch (e) {
+    console.error('Error marking lead as contacted:', e);
+  }
+}
+
+function closeOutreachModal() {
+  document.getElementById('outreach-modal').classList.add('hidden');
+  outreachState.currentModalLead = null;
+  outreachState.currentMessage = '';
 }

@@ -1,6 +1,7 @@
 import os
 import json
 import base64
+import random
 from datetime import datetime
 from flask import Flask, jsonify, request, Response, send_from_directory
 from flask_cors import CORS
@@ -10,6 +11,126 @@ app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'leads_db.json')
+
+# ──────────────────────────────────────────────
+# OUTREACH MESSAGE GENERATOR (Smart Templates)
+# ──────────────────────────────────────────────
+
+def generate_outreach_message(lead, demo_url=None):
+    """Generate a unique outreach message using smart template combination."""
+    name = lead.get('name', 'su negocio')
+    has_website = bool(lead.get('website'))
+    rating = lead.get('rating', 0)
+    reviews = lead.get('reviewsCount', 0)
+    category = lead.get('category', '')
+    location = lead.get('location', '')
+    location_short = location.split(',')[0] if location else 'su zona'
+
+    if not has_website:
+        return _generate_no_web_message(name, category, location_short, rating, reviews, demo_url)
+    else:
+        return _generate_has_web_message(name, category, location_short, rating, reviews, lead.get('website', ''))
+
+
+def _generate_no_web_message(name, category, location, rating, reviews, demo_url):
+    """Messages for businesses WITHOUT a website."""
+    demo_link = demo_url or 'https://capitask-software.netlify.app/'
+
+    greetings = [
+        "Hola, buenas",
+        "¡Hola! Buen día",
+        "Hola, ¿cómo están?",
+        "¡Buenas tardes!",
+        "Hola, un gusto saludarles",
+    ]
+
+    intros = [
+        f'He visto que su negocio "{name}" aún no cuenta con una página web propia.',
+        f'Noté que "{name}" no tiene presencia web y me llamó la atención porque tienen un excelente negocio.',
+        f'Estuve revisando negocios de {category} en {location} y vi que "{name}" todavía no tiene sitio web.',
+        f'Vi su negocio "{name}" en Google Maps y noté que no cuentan con una página web.',
+        f'Encontré "{name}" con {rating} estrellas en Google Maps, un negocio increíble que merece tener presencia digital.',
+    ]
+
+    presentations = [
+        'Me presento, soy Eliecer Bedoya, programador web y encargado de la empresa Capitask.',
+        'Soy Eliecer Bedoya, desarrollador web profesional de Capitask.',
+        'Mi nombre es Eliecer Bedoya, lidero el equipo de desarrollo en Capitask.',
+        'Soy Eliecer Bedoya de Capitask, nos dedicamos a crear páginas web profesionales para negocios como el suyo.',
+    ]
+
+    offers = [
+        f'Le he preparado una propuesta visual de cómo podría lucir su página web. Puede verla aquí: {demo_link}',
+        f'Me tomé la libertad de diseñar un prototipo de página web para su negocio. Échele un vistazo: {demo_link}',
+        f'Creé una demo personalizada para que vea cómo quedaría su sitio web profesional: {demo_link}',
+        f'Preparé un ejemplo de sitio web pensado especialmente para su negocio, puede revisarlo aquí: {demo_link}',
+    ]
+
+    closings = [
+        '¿Le gustaría que coordinemos una breve reunión para revisarlo juntos? ¡Quedo atento!',
+        '¿Le interesaría agendar una llamada rápida de 5 minutos para mostrarle la propuesta completa? ¡Saludos!',
+        '¿Podríamos tener una conversación breve al respecto? Estoy a su disposición. ¡Un saludo!',
+        'Si le interesa, con gusto le explico los detalles. ¿Cuándo le quedaría bien conversar?',
+        '¿Estaría abierto a que le presente la propuesta sin compromiso? ¡Quedo pendiente de su respuesta!',
+    ]
+
+    portfolio = random.choice([
+        f'\n\nConozca más sobre nuestros servicios: https://capitask-software.netlify.app/',
+        f'\n\nPuede ver nuestro portafolio completo aquí: https://capitask-software.netlify.app/',
+        '',
+    ])
+
+    msg = f"{random.choice(greetings)}. {random.choice(intros)}\n\n{random.choice(presentations)}\n\n{random.choice(offers)}{portfolio}\n\n{random.choice(closings)}"
+    return msg
+
+
+def _generate_has_web_message(name, category, location, rating, reviews, website):
+    """Messages for businesses WITH a website."""
+    web_short = website.replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
+
+    greetings = [
+        "Hola, buenas",
+        "¡Hola! Buen día",
+        "Hola, ¿cómo están?",
+        "¡Buenas tardes!",
+        "Hola, un gusto saludarles",
+    ]
+
+    intros = [
+        f'Vi su negocio "{name}" en Google Maps y estuve revisando su sitio web ({web_short}).',
+        f'Encontré "{name}" con {rating} estrellas y revisé su página web actual.',
+        f'Estuve analizando negocios de {category} en {location} y su sitio web llamó mi atención.',
+        f'Noté que "{name}" tiene un sitio web activo y quería compartirle algunas observaciones.',
+        f'Revisé su presencia digital de "{name}" y encontré oportunidades interesantes para mejorar su alcance.',
+    ]
+
+    presentations = [
+        'Soy Eliecer Bedoya de Capitask, nos especializamos en desarrollo web profesional.',
+        'Me presento, soy Eliecer Bedoya, desarrollador web de la empresa Capitask.',
+        'Mi nombre es Eliecer Bedoya, lidero el equipo técnico de Capitask.',
+        'Soy Eliecer Bedoya, programador web y encargado de Capitask.',
+    ]
+
+    observations = [
+        'Noté algunas oportunidades de mejora en la velocidad de carga y el diseño móvil que podrían ayudarles a captar más clientes.',
+        'Detecté que su sitio podría optimizarse para aparecer mejor posicionado en Google y atraer más visitas.',
+        'Vi que hay margen para mejorar la experiencia de usuario en celulares y la velocidad de su página.',
+        'Identifiqué áreas donde un rediseño moderno podría aumentar significativamente sus consultas y ventas online.',
+        'Encontré puntos de mejora en su web que, con ajustes estratégicos, podrían multiplicar sus clientes digitales.',
+    ]
+
+    closings = [
+        '¿Estaría abierto a que le envíe una propuesta rápida y sin compromiso? ¡Saludos!',
+        '¿Le interesaría una auditoría gratuita de 2 minutos de su sitio? Estoy a su disposición.',
+        '¿Podríamos tener una llamada breve para mostrarle las mejoras? ¡Quedo pendiente!',
+        'Si le interesa, puedo preparar una propuesta personalizada sin costo. ¿Qué le parece?',
+        '¿Le gustaría ver cómo podría lucir su sitio web mejorado? ¡Con gusto se lo muestro!',
+    ]
+
+    portfolio = f'\n\nConozca nuestro trabajo: https://capitask-software.netlify.app/'
+
+    msg = f"{random.choice(greetings)}. {random.choice(intros)}\n\n{random.choice(presentations)}\n\n{random.choice(observations)}{portfolio}\n\n{random.choice(closings)}"
+    return msg
 
 def init_db():
     if not os.path.exists(DB_PATH):
@@ -190,6 +311,43 @@ def search_stream():
         'Connection': 'keep-alive'
     }
     return Response(generate_events(), headers=headers)
+
+# Generate unique outreach message
+@app.route('/api/generate-message', methods=['POST'])
+def api_generate_message():
+    data = request.get_json()
+    lead = data.get('lead', {})
+    demo_url = data.get('demoUrl', None)
+
+    if not lead.get('name'):
+        return jsonify({'error': 'Lead data is required'}), 400
+
+    message = generate_outreach_message(lead, demo_url)
+    return jsonify({'message': message})
+
+# Mark lead as contacted
+@app.route('/api/leads/<id>/contacted', methods=['PATCH'])
+def mark_contacted(id):
+    db = read_db()
+    for lead in db.get('leads', []):
+        if lead.get('id') == id:
+            lead['contacted'] = True
+            lead['contactedAt'] = datetime.utcnow().isoformat() + 'Z'
+            write_db(db)
+            return jsonify({'success': True, 'message': 'Lead marcado como contactado'})
+    return jsonify({'success': False, 'message': 'Lead no encontrado'}), 404
+
+# Unmark lead as contacted
+@app.route('/api/leads/<id>/uncontacted', methods=['PATCH'])
+def unmark_contacted(id):
+    db = read_db()
+    for lead in db.get('leads', []):
+        if lead.get('id') == id:
+            lead['contacted'] = False
+            lead.pop('contactedAt', None)
+            write_db(db)
+            return jsonify({'success': True, 'message': 'Lead desmarcado'})
+    return jsonify({'success': False, 'message': 'Lead no encontrado'}), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
