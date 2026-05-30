@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
   setupSearchActions();
   setupPortfolioActions();
+  setupPaginationControls();
   loadAllData();
 });
 
@@ -731,8 +732,15 @@ function updateCategoryFilterOptions() {
   catFilter.value = currentVal;
 }
 
+// Pagination state
+const pagination = {
+  currentPage: 1,
+  rowsPerPage: 10,
+  filteredLeads: []
+};
+
 // Render Leads Table
-function renderLeadsTable() {
+function renderLeadsTable(resetPage = true) {
   updateCategoryFilterOptions();
 
   const tbody = document.getElementById('leads-table-body');
@@ -744,7 +752,6 @@ function renderLeadsTable() {
 
   // Filter leads
   const filtered = state.leads.filter(lead => {
-    // Search query check
     const matchesSearch = 
       lead.name.toLowerCase().includes(query) ||
       (lead.address && lead.address.toLowerCase().includes(query)) ||
@@ -753,10 +760,8 @@ function renderLeadsTable() {
       (lead.emails && lead.emails.some(e => e.toLowerCase().includes(query))) ||
       (lead.website && lead.website.toLowerCase().includes(query));
 
-    // Category filter check
     const matchesCategory = !category || lead.category === category;
 
-    // Contact filter check
     let matchesContact = true;
     if (contactType === 'contactable') {
       matchesContact = lead.phone || (lead.emails && lead.emails.length > 0);
@@ -771,14 +776,30 @@ function renderLeadsTable() {
     return matchesSearch && matchesCategory && matchesContact;
   });
 
-  document.getElementById('table-info-text').innerText = `Mostrando ${filtered.length} de ${state.leads.length} leads`;
+  pagination.filteredLeads = filtered;
+  if (resetPage) pagination.currentPage = 1;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pagination.rowsPerPage));
+  if (pagination.currentPage > totalPages) pagination.currentPage = totalPages;
+
+  const start = (pagination.currentPage - 1) * pagination.rowsPerPage;
+  const end = start + pagination.rowsPerPage;
+  const pageLeads = filtered.slice(start, end);
+
+  const showingEnd = Math.min(end, filtered.length);
+  document.getElementById('table-info-text').innerText =
+    `Mostrando ${filtered.length === 0 ? 0 : start + 1}–${showingEnd} de ${filtered.length} leads`;
+  document.getElementById('pagination-summary').innerText =
+    `Página ${pagination.currentPage} de ${totalPages}`;
+
+  renderPaginationButtons(totalPages);
 
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="9" class="table-empty">No se encontraron leads con los filtros seleccionados.</td></tr>`;
     return;
   }
 
-  filtered.forEach(lead => {
+  pageLeads.forEach(lead => {
     const tr = document.createElement('tr');
     tr.id = `lead-row-${lead.id}`;
 
@@ -876,6 +897,87 @@ function renderLeadsTable() {
     tbody.appendChild(tr);
   });
 }
+
+function renderPaginationButtons(totalPages) {
+  const container = document.getElementById('pagination-pages');
+  container.innerHTML = '';
+
+  const current = pagination.currentPage;
+  const delta = 2;
+  const pages = [];
+
+  for (let i = Math.max(1, current - delta); i <= Math.min(totalPages, current + delta); i++) {
+    pages.push(i);
+  }
+
+  // Always show first page
+  if (pages[0] > 1) {
+    const btn = makePaginationBtn(1, current);
+    container.appendChild(btn);
+    if (pages[0] > 2) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'pagination-ellipsis';
+      ellipsis.innerText = '…';
+      container.appendChild(ellipsis);
+    }
+  }
+
+  pages.forEach(p => container.appendChild(makePaginationBtn(p, current)));
+
+  // Always show last page
+  if (pages[pages.length - 1] < totalPages) {
+    if (pages[pages.length - 1] < totalPages - 1) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'pagination-ellipsis';
+      ellipsis.innerText = '…';
+      container.appendChild(ellipsis);
+    }
+    container.appendChild(makePaginationBtn(totalPages, current));
+  }
+
+  // Wire prev/next/first/last buttons
+  const totalPages_ = totalPages;
+  document.getElementById('pagination-first').disabled = current === 1;
+  document.getElementById('pagination-prev').disabled = current === 1;
+  document.getElementById('pagination-next').disabled = current === totalPages_;
+  document.getElementById('pagination-last').disabled = current === totalPages_;
+}
+
+function makePaginationBtn(page, current) {
+  const btn = document.createElement('button');
+  btn.className = 'pagination-btn pagination-page-btn' + (page === current ? ' active' : '');
+  btn.innerText = page;
+  btn.addEventListener('click', () => {
+    pagination.currentPage = page;
+    renderLeadsTable(false);
+    document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  return btn;
+}
+
+function setupPaginationControls() {
+  document.getElementById('rows-per-page').addEventListener('change', (e) => {
+    pagination.rowsPerPage = parseInt(e.target.value);
+    pagination.currentPage = 1;
+    renderLeadsTable(false);
+  });
+  document.getElementById('pagination-first').addEventListener('click', () => {
+    pagination.currentPage = 1;
+    renderLeadsTable(false);
+  });
+  document.getElementById('pagination-prev').addEventListener('click', () => {
+    if (pagination.currentPage > 1) { pagination.currentPage--; renderLeadsTable(false); }
+  });
+  document.getElementById('pagination-next').addEventListener('click', () => {
+    const total = Math.ceil(pagination.filteredLeads.length / pagination.rowsPerPage);
+    if (pagination.currentPage < total) { pagination.currentPage++; renderLeadsTable(false); }
+  });
+  document.getElementById('pagination-last').addEventListener('click', () => {
+    pagination.currentPage = Math.ceil(pagination.filteredLeads.length / pagination.rowsPerPage);
+    renderLeadsTable(false);
+  });
+}
+
 
 // Delete single lead
 window.deleteLead = async (id) => {

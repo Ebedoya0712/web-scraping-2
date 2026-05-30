@@ -437,6 +437,25 @@
           </div>
           <div class="table-footer">
             <div class="table-info" id="table-info-text">Mostrando 0 de 0 leads</div>
+            <div class="pagination-bar" id="pagination-bar">
+              <div class="pagination-per-page">
+                <label for="rows-per-page">Filas:</label>
+                <select id="rows-per-page">
+                  <option value="10" selected>10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <div class="pagination-controls">
+                <button id="pagination-first" class="pagination-btn" title="Primera página">«</button>
+                <button id="pagination-prev" class="pagination-btn" title="Página anterior">‹</button>
+                <div id="pagination-pages" class="pagination-pages"></div>
+                <button id="pagination-next" class="pagination-btn" title="Página siguiente">›</button>
+                <button id="pagination-last" class="pagination-btn" title="Última página">»</button>
+              </div>
+              <div class="pagination-summary" id="pagination-summary">Página 1 de 1</div>
+            </div>
           </div>
         </div>
       </section>
