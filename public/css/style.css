@@ -1242,6 +1242,8 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .lead-detail-icon {

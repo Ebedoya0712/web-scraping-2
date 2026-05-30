@@ -10,11 +10,14 @@ def clean_emails(emails):
     if not emails:
         return []
     invalid_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.css', '.js']
+    ignored_domains = ['sentry.io', 'wixpress.com', 'google.com', 'example.com', 'test.com', 'domain.com', 'sentry-cdn.com']
     cleaned = []
     for email in set(e.strip().lower() for e in emails):
         if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
             continue
         if any(email.endswith(ext) for ext in invalid_extensions):
+            continue
+        if any(domain in email for domain in ignored_domains):
             continue
         cleaned.append(email)
     return cleaned

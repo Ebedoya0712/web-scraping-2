@@ -9,11 +9,14 @@ puppeteer.use(StealthPlugin());
 function cleanEmails(emails) {
   if (!emails) return [];
   const invalidExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.css', '.js'];
+  const ignoredDomains = ['sentry.io', 'wixpress.com', 'google.com', 'example.com', 'test.com', 'domain.com', 'sentry-cdn.com'];
   return [...new Set(emails.map(e => e.trim().toLowerCase()))].filter(email => {
     // Basic regex validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
     // Remove image/asset false positives
-    return !invalidExtensions.some(ext => email.endsWith(ext));
+    if (invalidExtensions.some(ext => email.endsWith(ext))) return false;
+    // Ignore common tracking/fake domains
+    return !ignoredDomains.some(domain => email.includes(domain));
   });
 }
 
