@@ -873,6 +873,26 @@ body {
 
 .table-container {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 550px;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.65);
 }
 
 .leads-table {
@@ -883,11 +903,14 @@ body {
 }
 
 .leads-table th {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--bg-surface);
   padding: 16px 20px;
   font-weight: 600;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .leads-table td {
