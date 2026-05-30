@@ -104,75 +104,83 @@ def search_stream():
         return jsonify({'error': 'Categoría y Ubicación son requeridos'}), 400
 
     def generate_events():
-        scraped_leads = []
+        import queue
+        import threading
+
+        event_queue = queue.Queue()
 
         def callback(progress_data):
-            # Capture the intermediate scraped details to accumulate them
             if progress_data.get('type') == 'detail-end':
-                scraped_leads.append(progress_data['business'])
-            # Yield event to frontend
-            yield f"data: {json.dumps(progress_data, ensure_ascii=False)}\n\n"
+                pass  # will be sent directly via queue
+            event_queue.put(progress_data)
 
-        # Start search
-        try:
-            results = scrape_google_maps(niche, location, limit, progress_callback=callback)
-            
-            # Save results into database
-            db = read_db()
-            new_leads_count = 0
-            
-            def normalize_name(name):
-                return "".join(c for c in name.lower() if c.isalnum()) if name else ""
-
-            for item in results:
-                # Generate unique ID
-                maps_url = item.get('mapsUrl', '')
-                if '/place/' in maps_url:
-                    lead_id = maps_url.split('/place/')[1].split('/')[0]
-                else:
-                    lead_id = base64.b64encode(item['name'].encode('utf-8')).decode('utf-8')[:16]
+        def run_scraper():
+            try:
+                results = scrape_google_maps(niche, location, limit, progress_callback=callback)
                 
-                item['id'] = lead_id
-                item['location'] = location
-                item['scrapedAt'] = datetime.utcnow().isoformat() + 'Z'
+                # Save results into database
+                db = read_db()
+                new_leads_count = 0
                 
-                # Check duplication by URL or normalized name
-                norm_name = normalize_name(item['name'])
-                exists = any(
-                    l.get('mapsUrl') == item.get('mapsUrl') or 
-                    normalize_name(l.get('name', '')) == norm_name
-                    for l in db['leads']
-                )
-                if not exists:
-                    db['leads'].append(item)
-                    new_leads_count += 1
+                def normalize_name(name):
+                    return "".join(c for c in name.lower() if c.isalnum()) if name else ""
 
-            # Save search record
-            db['searches'].append({
-                'id': base64.b64encode(f"{niche}-{location}-{datetime.utcnow().isoformat()}".encode('utf-8')).decode('utf-8')[:12],
-                'niche': niche,
-                'location': location,
-                'resultsCount': len(results),
-                'newLeadsCount': new_leads_count,
-                'date': datetime.utcnow().isoformat() + 'Z'
-            })
-            
-            write_db(db)
+                for item in results:
+                    maps_url = item.get('mapsUrl', '')
+                    if '/place/' in maps_url:
+                        lead_id = maps_url.split('/place/')[1].split('/')[0]
+                    else:
+                        lead_id = base64.b64encode(item['name'].encode('utf-8')).decode('utf-8')[:16]
+                    
+                    item['id'] = lead_id
+                    item['location'] = location
+                    item['scrapedAt'] = datetime.utcnow().isoformat() + 'Z'
+                    
+                    norm_name = normalize_name(item['name'])
+                    exists = any(
+                        l.get('mapsUrl') == item.get('mapsUrl') or 
+                        normalize_name(l.get('name', '')) == norm_name
+                        for l in db['leads']
+                    )
+                    if not exists:
+                        db['leads'].append(item)
+                        new_leads_count += 1
 
-            # Signal completion
-            complete_data = {
-                'type': 'complete',
-                'resultsCount': len(results),
-                'newLeadsCount': new_leads_count
-            }
-            yield f"data: {json.dumps(complete_data, ensure_ascii=False)}\n\n"
+                db['searches'].append({
+                    'id': base64.b64encode(f"{niche}-{location}-{datetime.utcnow().isoformat()}".encode('utf-8')).decode('utf-8')[:12],
+                    'niche': niche,
+                    'location': location,
+                    'resultsCount': len(results),
+                    'newLeadsCount': new_leads_count,
+                    'date': datetime.utcnow().isoformat() + 'Z'
+                })
+                
+                write_db(db)
 
-        except Exception as e:
-            error_data = {
-                'type': 'error',
-                'message': str(e)
-            }
-            yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
+                event_queue.put({
+                    'type': 'complete',
+                    'resultsCount': len(results),
+                    'newLeadsCount': new_leads_count
+                })
+
+            except Exception as e:
+                event_queue.put({'type': 'error', 'message': str(e)})
+            finally:
+                event_queue.put(None)  # Sentinel to signal end
+
+        thread = threading.Thread(target=run_scraper, daemon=True)
+        thread.start()
+
+        while True:
+            try:
+                event = event_queue.get(timeout=120)
+                if event is None:
+                    break
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+            except queue.Empty:
+                # Send a keepalive comment to prevent timeout
+                yield ": keepalive\n\n"
+                break
 
     # Set response headers for SSE streaming
     headers = {

@@ -619,10 +619,10 @@ function setupSearchActions() {
       } else if (data.type === 'warning') {
         logToConsole(data.message, 'warning');
       } else if (data.type === 'error') {
-        logToConsole(data.message, 'error');
+        logToConsole(`❌ Error: ${data.message}`, 'error');
+        document.getElementById('search-status-text').innerText = `❌ Error: ${data.message}`;
         eventSource.close();
         resetSearchButton();
-        alert(`Error en el scraper: ${data.message}`);
       } else if (data.type === 'progress') {
         state.currentScrape.foundCount = data.count;
         document.getElementById('progress-found-count').innerText = data.count;
@@ -641,14 +641,13 @@ function setupSearchActions() {
         updateLiveLead(business, location);
         logToConsole(`[✓] Detalles listos para "${business.name}" - ${business.phone || 'Sin tel'} - ${business.emails?.join(', ') || 'Sin email'}.`, 'success');
       } else if (data.type === 'complete') {
-        logToConsole(`Búsqueda completa. Encontrados: ${data.resultsCount} leads. Nuevos guardados: ${data.newLeadsCount}`, 'success');
+        logToConsole(`✅ Búsqueda completa. Encontrados: ${data.resultsCount} leads. Nuevos guardados: ${data.newLeadsCount}`, 'success');
         document.getElementById('progress-bar-fill').style.width = '100%';
-        document.getElementById('search-status-text').innerText = 'Completado con éxito.';
+        document.getElementById('search-status-text').innerText = `✅ Completado: ${data.resultsCount} negocios encontrados, ${data.newLeadsCount} nuevos guardados.`;
         
         eventSource.close();
         resetSearchButton();
         loadAllData();
-        alert(`Búsqueda finalizada. ${data.newLeadsCount} nuevos leads añadidos a tu cartera.`);
       }
     };
 
